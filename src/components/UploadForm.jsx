@@ -3,43 +3,53 @@ import { useState } from "react";
 export default function UploadForm() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadingFile, setUploadingFile] = useState(null);
+  const [scanResult, setScanResult] = useState(null);
 
   const handleDrop = (e) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.sol'));
     if (files.length) {
-      simulateUpload(files);
+      uploadToBackend(files);
     }
   };
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files).filter(f => f.name.endsWith('.sol'));
     if (files.length) {
-      simulateUpload(files);
+      uploadToBackend(files);
     }
   };
 
-  const simulateUpload = (files) => {
+  // Gửi file lên backend Flask
+  const uploadToBackend = async (files) => {
     const file = files[0];
     setUploadingFile(file);
-    // Giả lập progress
-    setTimeout(() => {
+    setScanResult(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      // Upload thành công → thêm file vào list + hiển thị kết quả
       setSelectedFiles(prev => [...prev, file]);
+      setScanResult(data);
+    } catch (err) {
+      setScanResult({ error: err.message });
+    } finally {
       setUploadingFile(null);
-    }, 1000);
+    }
   };
 
   const handleRemove = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (selectedFiles.length) {
-      alert("Scanning files...");
-    } else {
-      alert("Please upload at least one .sol file");
-    }
+    setScanResult(null);
   };
 
   return (
@@ -53,13 +63,21 @@ export default function UploadForm() {
         onDrop={handleDrop}
       >
         <div className="text-4xl mb-2">☁️</div>
-        <p>Drag & drop your <strong>.sol</strong> file or{" "}
+        <p>
+          Drag & drop your <strong>.sol</strong> file or{" "}
           <label className="text-blue-600 underline cursor-pointer">
             Browse
-            <input type="file" accept=".sol" onChange={handleFileChange} className="hidden" />
+            <input
+              type="file"
+              accept=".sol"
+              onChange={handleFileChange}
+              className="hidden"
+            />
           </label>
         </p>
-        <p className="text-sm text-gray-500 mt-2">Solidity smart contracts only (.sol)</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Solidity smart contracts only (.sol)
+        </p>
       </div>
 
       {/* Uploading file progress */}
@@ -82,7 +100,8 @@ export default function UploadForm() {
       {selectedFiles.length > 0 && (
         <div className="mt-4 w-full">
           <p className="text-sm text-gray-700 mb-1">
-            Uploaded - {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''}
+            Uploaded - {selectedFiles.length} file
+            {selectedFiles.length > 1 ? "s" : ""}
           </p>
           <div className="space-y-2">
             {selectedFiles.map((file, idx) => (
@@ -104,13 +123,15 @@ export default function UploadForm() {
         </div>
       )}
 
-      {/* Start Scan */}
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-indigo-700 text-white py-3 rounded mt-6 hover:bg-indigo-800"
-      >
-        Start Vulnerability Scan
-      </button>
+      {/* Scan Result */}
+      {scanResult && (
+        <div className="mt-6 bg-white p-4 rounded shadow">
+          <h3 className="text-lg font-semibold mb-2">Scan Result</h3>
+          <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap break-words overflow-x-auto">
+            {JSON.stringify(scanResult, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
