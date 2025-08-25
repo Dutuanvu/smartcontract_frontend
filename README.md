@@ -40,10 +40,3 @@ sudo cp -r dist/* /usr/share/nginx/html/
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 ```
-
-Visit `http://<EC2_PUBLIC_IP>/` to see the frontend.
-
----
-
-sudo yum install
-```
