@@ -1,12 +1,49 @@
-# React + Vite
+# Capstoned: Smart Contract Vulnerabilities Detection
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project provides a simple front-end (React + Vite) and back-end server to demonstrate smart contract vulnerability detection.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Frontend Deployment (React + Vite)
 
-## Expanding the ESLint configuration
+### 1. Install Node.js and Nginx
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Amazon Linux:
+
+```bash
+sudo yum update -y
+curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
+sudo yum install -y nodejs nginx unzip
+```
+
+Ubuntu/Debian:
+
+```bash
+sudo apt update -y
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs nginx unzip
+```
+
+### 2. Build frontend
+
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+### 3. Deploy build to Nginx
+
+```bash
+sudo rm -rf /usr/share/nginx/html/*
+sudo cp -r dist/* /usr/share/nginx/html/
+sudo systemctl enable nginx
+sudo systemctl restart nginx
+```
+
+Visit `http://<EC2_PUBLIC_IP>/` to see the frontend.
+
+---
+
+sudo yum install
+```
