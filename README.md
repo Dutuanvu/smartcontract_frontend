@@ -27,7 +27,6 @@ sudo apt install -y nodejs nginx unzip
 ### 2. Build frontend
 
 ```bash
-cd frontend
 npm install
 npm run build
 ```
