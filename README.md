@@ -5,8 +5,8 @@
 
 ### 1. Install NodeJs
 ```bash
-sudo dnf module enable nodejs:20 -y
-sudo dnf install -y nodejs npm
+sudo amazon-linux-extras enable nodejs20
+sudo yum install -y nodejs npm
 ```
 
 ### 2. Build front-end using NodeJs
