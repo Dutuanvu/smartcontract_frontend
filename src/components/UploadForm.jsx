@@ -7,22 +7,24 @@ export default function UploadForm() {
 
   const handleDrop = (e) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.sol'));
+    const files = Array.from(e.dataTransfer.files).filter(f =>
+      f.name.endsWith('.sol') || f.name.endsWith('.docx')
+    );
     if (files.length) {
-      uploadToBackend(files);
+      uploadToBackend(files[0]);
     }
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files).filter(f => f.name.endsWith('.sol'));
+    const files = Array.from(e.target.files).filter(f =>
+      f.name.endsWith('.sol') || f.name.endsWith('.docx')
+    );
     if (files.length) {
-      uploadToBackend(files);
+      uploadToBackend(files[0]);
     }
   };
 
-  // Gửi file lên backend Flask
-  const uploadToBackend = async (files) => {
-    const file = files[0];
+  const uploadToBackend = async (file) => {
     setUploadingFile(file);
     setScanResult(null);
 
@@ -32,14 +34,27 @@ export default function UploadForm() {
     try {
       const response = await fetch("http://127.0.0.1:5000/upload", {
         method: "POST",
-        body: formData
+        body: formData,
       });
 
       const data = await response.json();
 
-      // Upload thành công → thêm file vào list + hiển thị kết quả
-      setSelectedFiles(prev => [...prev, file]);
-      setScanResult(data);
+      if (response.ok) {
+        setSelectedFiles(prev => [...prev, file]);
+        setScanResult(data);
+
+        // ⬇️ Save to localStorage
+        const newEntry = {
+          fileName: file.name,
+          timestamp: new Date().toISOString(),
+          result: data,
+          duration: data.duration || "Unknown"
+        };
+        const existing = JSON.parse(localStorage.getItem("scanHistory")) || [];
+        localStorage.setItem("scanHistory", JSON.stringify([newEntry, ...existing]));
+      } else {
+        setScanResult({ error: data.error || "Unknown error" });
+      }
     } catch (err) {
       setScanResult({ error: err.message });
     } finally {
@@ -64,28 +79,26 @@ export default function UploadForm() {
       >
         <div className="text-4xl mb-2">☁️</div>
         <p>
-          Drag & drop your <strong>.sol</strong> file or{" "}
+          Drag & drop your <strong>.sol</strong> or <strong>.docx</strong> file or{" "}
           <label className="text-blue-600 underline cursor-pointer">
             Browse
             <input
               type="file"
-              accept=".sol"
+              accept=".sol,.docx"
               onChange={handleFileChange}
               className="hidden"
             />
           </label>
         </p>
         <p className="text-sm text-gray-500 mt-2">
-          Solidity smart contracts only (.sol)
+          Only Solidity (.sol) or extracted (.docx) smart contracts
         </p>
       </div>
 
-      {/* Uploading file progress */}
+      {/* Uploading Progress */}
       {uploadingFile && (
         <div className="mt-4">
-          <p className="text-sm text-gray-700 mb-1">
-            Uploading - 1/1 file
-          </p>
+          <p className="text-sm text-gray-700 mb-1">Uploading - 1/1 file</p>
           <div className="bg-gray-200 rounded-full h-2 mb-1">
             <div className="bg-blue-500 h-2 rounded-full w-2/3"></div>
           </div>
@@ -96,7 +109,7 @@ export default function UploadForm() {
         </div>
       )}
 
-      {/* Uploaded files list */}
+      {/* Uploaded Files */}
       {selectedFiles.length > 0 && (
         <div className="mt-4 w-full">
           <p className="text-sm text-gray-700 mb-1">
@@ -123,10 +136,10 @@ export default function UploadForm() {
         </div>
       )}
 
-      {/* Scan Result */}
+      {/* Result from /upload */}
       {scanResult && (
         <div className="mt-6 bg-white p-4 rounded shadow">
-          <h3 className="text-lg font-semibold mb-2">Scan Result</h3>
+          <h3 className="text-lg font-semibold mb-2">Scan Result (from /upload)</h3>
           <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap break-words overflow-x-auto">
             {JSON.stringify(scanResult, null, 2)}
           </pre>
