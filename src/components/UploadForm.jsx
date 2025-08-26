@@ -8,7 +8,7 @@ export default function UploadForm() {
   const handleDrop = (e) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files).filter(f =>
-      f.name.endsWith('.sol') || f.name.endsWith('.docx')
+      f.name.endsWith('.sol')
     );
     if (files.length) {
       uploadToBackend(files[0]);
@@ -17,7 +17,7 @@ export default function UploadForm() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files).filter(f =>
-      f.name.endsWith('.sol') || f.name.endsWith('.docx')
+      f.name.endsWith('.sol')
     );
     if (files.length) {
       uploadToBackend(files[0]);
@@ -43,7 +43,6 @@ export default function UploadForm() {
         setSelectedFiles(prev => [...prev, file]);
         setScanResult(data);
 
-        // ⬇️ Save to localStorage
         const newEntry = {
           fileName: file.name,
           timestamp: new Date().toISOString(),
@@ -79,19 +78,19 @@ export default function UploadForm() {
       >
         <div className="text-4xl mb-2">☁️</div>
         <p>
-          Drag & drop your <strong>.sol</strong> or <strong>.docx</strong> file or{" "}
+          Drag & drop your <strong>.sol</strong> file or{" "}
           <label className="text-blue-600 underline cursor-pointer">
             Browse
             <input
               type="file"
-              accept=".sol,.docx"
+              accept=".sol"
               onChange={handleFileChange}
               className="hidden"
             />
           </label>
         </p>
         <p className="text-sm text-gray-500 mt-2">
-          Only Solidity (.sol) or extracted (.docx) smart contracts
+          Only Solidity (.sol) smart contracts
         </p>
       </div>
 
