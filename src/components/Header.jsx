@@ -1,14 +1,7 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-export default function Header({ user, setUser, onShowHistory }) {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    setUser(null); // clear user
-    navigate('/'); // go back home
-  };
-
+export default function Header({ user, onShowHistory }) {
   return (
     <header className="w-full sticky top-0 z-50 bg-[#003366] text-white px-8 py-4 shadow-md flex justify-between items-center">
       {/* Logo with clickable redirect to Scan page */}
@@ -24,31 +17,18 @@ export default function Header({ user, setUser, onShowHistory }) {
           <a href="#about" className="hover:underline">About</a>
         </nav>
 
-        {/* Right side: Login OR User */}
-        {!user ? (
-          // If not logged in → show Login
+        {/* Login / User Button */}
+        {user ? (
+          <span className="bg-yellow-400 text-black px-4 py-2 rounded font-semibold">
+            {user}
+          </span>
+        ) : (
           <Link
             to="/login"
             className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 font-semibold"
           >
             Login
           </Link>
-        ) : (
-          // If logged in → show username + logout
-          <div className="flex items-center space-x-3">
-            <button
-              className="bg-yellow-400 text-black px-4 py-2 rounded font-semibold cursor-default"
-              onClick={() => navigate('/')}
-            >
-              {user}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-400 font-semibold"
-            >
-              Logout
-            </button>
-          </div>
         )}
       </div>
     </header>
