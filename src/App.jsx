@@ -7,6 +7,7 @@ import HistorySidebar from './components/HistorySidebar';
 import Login from './components/Login';
 import backgroundImage from './assets/background.png';
 import { useState } from 'react';
+import Signup from './components/Signup';
 
 export default function App() {
   const [showHistory, setShowHistory] = useState(false);
@@ -43,8 +44,13 @@ export default function App() {
 
           {/* Login Page */}
           <Route path="/login" element={<Login user={user} setUser={setUser} />} />
-        </Routes>
 
+          {/*Signup Page */}
+          <Route path="/" element={<ScanPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          
+        </Routes>
         {/* About + Footer */}
         <section id="about" className="w-full min-h-screen bg-white px-8 py-20 scroll-mt-20">
           <AboutSection />
