@@ -5,10 +5,10 @@ export default function Header({ user, onShowHistory }) {
   return (
     <header className="w-full sticky top-0 z-50 bg-[#003366] text-white px-8 py-4 shadow-md flex justify-between items-center">
       {/* Logo with clickable redirect to Scan page */}
-      <a href="#upload" className="flex items-center font-bold text-xl hover:opacity-90">
+      <Link to="/" className="flex items-center font-bold text-xl hover:opacity-90">
         <span className="text-yellow-400 mr-2 text-2xl">🛡️</span>
         <span className="text-white">SmartContractScanner</span>
-      </a>
+      </Link>
 
       {/* Navigation */}
       <div className="flex items-center space-x-6">
