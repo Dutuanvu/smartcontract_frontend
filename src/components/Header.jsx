@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default function Header({ user, onShowHistory }) {
   return (
     <header className="w-full sticky top-0 z-50 bg-[#003366] text-white px-8 py-4 shadow-md flex justify-between items-center">
-      {/* Logo with clickable redirect to Scan page */}
+      {/* Logo */}
       <Link to="/" className="flex items-center font-bold text-xl hover:opacity-90">
         <span className="text-yellow-400 mr-2 text-2xl">🛡️</span>
         <span className="text-white">SmartContractScanner</span>
@@ -20,7 +20,7 @@ export default function Header({ user, onShowHistory }) {
         {/* Login / User Button */}
         {user ? (
           <span className="bg-yellow-400 text-black px-4 py-2 rounded font-semibold">
-            {user}
+            {user} {/* Shows username or email */}
           </span>
         ) : (
           <Link

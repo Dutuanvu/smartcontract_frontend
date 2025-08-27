@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
+export default function Login({ setUser }) {
+  const [identifier, setIdentifier] = useState(''); // email or username
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
+
     // Dummy login logic
-    alert("Logged in!");
-    navigate('/'); // Redirect to Scan page
+    if (identifier && password) {
+      alert(`Logged in as ${identifier}!`);
+      setUser(identifier); // Update global user state
+      navigate('/'); // Redirect to home/scan page
+    } else {
+      alert('Please enter your username/email and password');
+    }
   };
 
   return (
@@ -19,19 +25,20 @@ export default function Login() {
         {/* Title */}
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#003366]">Welcome Back!</h1>
-          <p className="text-sm text-gray-600">Please login to your account</p>
+          <p className="text-sm text-gray-600">Login with your username or email</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">Username or Email</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:outline-none"
+              placeholder="username or email"
             />
           </div>
           <div>
