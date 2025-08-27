@@ -16,7 +16,6 @@ export default function Signup() {
     }
 
     // Dummy signup logic
-    alert(`Account created!\nUsername: ${username}\nEmail: ${email}`);
     navigate('/login'); // Redirect to Login page
   };
 
