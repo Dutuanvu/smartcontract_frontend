@@ -4,16 +4,15 @@ import { Link } from 'react-router-dom';
 export default function Header({ onShowHistory }) {
   return (
     <header className="w-full sticky top-0 z-50 bg-[#003366] text-white px-8 py-4 shadow-md flex justify-between items-center">
-      {/* Logo */}
-      <div className="flex items-center font-bold text-xl">
-        <span className="text-yellow-400 mr-2">🔒</span>
-        SmartContractScanner
-      </div>
+      {/* Logo with clickable redirect to Scan page */}
+          <a href="#upload" className="flex items-center font-bold text-xl hover:opacity-90">
+            <span className="text-yellow-400 mr-2 text-2xl">🛡️</span>
+            <span className="text-white">SmartContractScanner</span>
+          </a>
 
       {/* Navigation */}
       <div className="flex items-center space-x-6">
         <nav className="flex space-x-6">
-          <a href="#upload" className="hover:underline">Upload & Scan</a>
           <button onClick={onShowHistory} className="hover:underline">History</button>
           <a href="#about" className="hover:underline">About</a>
         </nav>
