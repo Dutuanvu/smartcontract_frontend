@@ -1,19 +1,17 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login({ setUser }) {
-  const [identifier, setIdentifier] = useState(''); // email or username
+  const [identifier, setIdentifier] = useState(''); // username or email
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
 
-    // Dummy login logic
     if (identifier && password) {
-      alert(`Logged in as ${identifier}!`);
-      setUser(identifier); // Update global user state
-      navigate('/'); // Redirect to home/scan page
+      setUser(identifier); // Update global state with username/email
+      navigate('/'); // Redirect to Home/Scan page
     } else {
       alert('Please enter your username/email and password');
     }
@@ -22,13 +20,11 @@ export default function Login({ setUser }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#003366] to-[#001F3F] flex items-center justify-center px-4">
       <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full space-y-6">
-        {/* Title */}
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#003366]">Welcome Back!</h1>
           <p className="text-sm text-gray-600">Login with your username or email</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Username or Email</label>
@@ -59,16 +55,15 @@ export default function Login({ setUser }) {
           </button>
         </form>
 
-        {/* Sign Up Redirect */}
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Don’t have an account?
-            <Link
-              to="/signup"
+            <a
+              href="/#/signup"
               className="text-yellow-400 font-semibold ml-2 hover:underline"
             >
               Sign Up
-            </Link>
+            </a>
           </p>
         </div>
       </div>

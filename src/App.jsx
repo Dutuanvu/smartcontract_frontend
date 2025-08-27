@@ -1,4 +1,5 @@
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import UploadForm from './components/UploadForm';
@@ -7,11 +8,10 @@ import HistorySidebar from './components/HistorySidebar';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import backgroundImage from './assets/background.png';
-import { useState } from 'react';
 
 export default function App() {
   const [showHistory, setShowHistory] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // logged in user
 
   return (
     <Router>
@@ -23,7 +23,6 @@ export default function App() {
         )}
 
         <Routes>
-          {/* Home / Scan Page */}
           <Route
             path="/"
             element={
@@ -41,15 +40,10 @@ export default function App() {
               </main>
             }
           />
-
-          {/* Login Page */}
-          <Route path="/login" element={<Login user={user} setUser={setUser} />} />
-
-          {/* Signup Page */}
+          <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup />} />
         </Routes>
 
-        {/* About + Footer */}
         <section id="about" className="w-full min-h-screen bg-white px-8 py-20 scroll-mt-20">
           <AboutSection />
         </section>
