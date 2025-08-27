@@ -2,40 +2,59 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
-  const [identifier, setIdentifier] = useState(''); // username or email
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSignup = (e) => {
     e.preventDefault();
-    if (!identifier || !password) {
-      alert("Please enter username/email and password");
+
+    if (!username || !email || !password) {
+      alert("Please fill in all fields");
       return;
     }
+
     // Dummy signup logic
-    alert("Account created! You can now log in.");
+    alert(`Account created!\nUsername: ${username}\nEmail: ${email}`);
     navigate('/login'); // Redirect to Login page
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#003366] to-[#001F3F] flex items-center justify-center px-4">
       <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full space-y-6">
+        {/* Title */}
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#003366]">Create Account</h1>
-          <p className="text-sm text-gray-600">Sign up with username or email</p>
+          <p className="text-sm text-gray-600">Sign up to get started</p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Username or Email</label>
+            <label className="block text-sm font-medium text-gray-700">Username</label>
             <input
               type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:outline-none"
+              placeholder="Username"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:outline-none"
+              placeholder="Email"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input
@@ -44,8 +63,10 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:outline-none"
+              placeholder="Password"
             />
           </div>
+
           <button
             type="submit"
             className="w-full bg-yellow-400 text-black py-2 rounded hover:bg-yellow-300 font-semibold"
@@ -54,6 +75,7 @@ export default function Signup() {
           </button>
         </form>
 
+        {/* Login Redirect */}
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Already have an account?
