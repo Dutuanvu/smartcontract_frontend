@@ -1,17 +1,17 @@
-import { HashRouter as Router, Routes, Route } from "react-router-dom"; // 👈 HashRouter prevents blank pages
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Header from './components/Header';
 import Footer from './components/Footer';
 import UploadForm from './components/UploadForm';
 import AboutSection from './components/AboutSection';
 import HistorySidebar from './components/HistorySidebar';
 import Login from './components/Login';
+import Signup from './components/Signup';
 import backgroundImage from './assets/background.png';
 import { useState } from 'react';
-import Signup from './components/Signup';
 
 export default function App() {
   const [showHistory, setShowHistory] = useState(false);
-  const [user, setUser] = useState(null); // global logged in user
+  const [user, setUser] = useState(null);
 
   return (
     <Router>
@@ -45,12 +45,10 @@ export default function App() {
           {/* Login Page */}
           <Route path="/login" element={<Login user={user} setUser={setUser} />} />
 
-          {/*Signup Page */}
-          <Route path="/" element={<ScanPage />} />
-          <Route path="/login" element={<Login />} />
+          {/* Signup Page */}
           <Route path="/signup" element={<Signup />} />
-          
         </Routes>
+
         {/* About + Footer */}
         <section id="about" className="w-full min-h-screen bg-white px-8 py-20 scroll-mt-20">
           <AboutSection />
