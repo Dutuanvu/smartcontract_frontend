@@ -10,17 +10,19 @@ import { useState } from 'react';
 
 export default function App() {
   const [showHistory, setShowHistory] = useState(false);
+  const [user, setUser] = useState(null); // global logged in user
 
   return (
     <Router>
       <div className="flex flex-col w-full relative">
-        <Header onShowHistory={() => setShowHistory(true)} />
+        <Header user={user} onShowHistory={() => setShowHistory(true)} />
 
         {showHistory && (
           <HistorySidebar isOpen={showHistory} onClose={() => setShowHistory(false)} />
         )}
 
         <Routes>
+          {/* Home / Scan Page */}
           <Route
             path="/"
             element={
@@ -38,10 +40,12 @@ export default function App() {
               </main>
             }
           />
-          
-          <Route path="/login" element={<Login />} />
+
+          {/* Login Page */}
+          <Route path="/login" element={<Login setUser={setUser} />} />
         </Routes>
 
+        {/* About + Footer */}
         <section id="about" className="w-full min-h-screen bg-white px-8 py-20 scroll-mt-20">
           <AboutSection />
         </section>
