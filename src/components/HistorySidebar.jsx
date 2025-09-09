@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RescanCompareModal from "./RescanCompareModal";
 
 // Countdown component
@@ -15,9 +15,6 @@ const Countdown = ({ expiresAt }) => {
     return () => clearInterval(interval);
   }, [expiresAt]);
 
-  if (timeLeft <= 0)
-    return <p className="text-sm text-red-600">File expired</p>;
-
   const hours = Math.floor(timeLeft / 3600);
   const minutes = Math.floor((timeLeft % 3600) / 60);
   const seconds = timeLeft % 60;
@@ -29,17 +26,27 @@ const Countdown = ({ expiresAt }) => {
   );
 };
 
+
 export default function HistorySidebar({
   isOpen,
   onClose,
   onViewReport,
-  onViewSource,
   history,
   setHistory,
 }) {
   const [showRescanModal, setShowRescanModal] = useState(false);
   const [newScan, setNewScan] = useState(null);
   const [currentRescan, setCurrentRescan] = useState(null);
+
+  // Auto-clear expired files
+  useEffect(() => {
+    const now = Date.now() / 1000; // current time in seconds
+    const validHistory = history.filter((item) => !item.expires_at || item.expires_at > now);
+    if (validHistory.length !== history.length) {
+      setHistory(validHistory);
+      localStorage.setItem("scanHistory", JSON.stringify(validHistory));
+    }
+  }, [history, setHistory]);
 
   const handleClear = () => {
     localStorage.removeItem("scanHistory");
@@ -124,13 +131,7 @@ export default function HistorySidebar({
                     className="text-blue-600 hover:underline text-sm"
                     onClick={() => onViewReport(item)}
                   >
-                    Report
-                  </button>
-                  <button
-                    className="text-blue-600 hover:underline text-sm"
-                    onClick={() => onViewSource(item)}
-                  >
-                    Source
+                    Download
                   </button>
                 </div>
               </div>

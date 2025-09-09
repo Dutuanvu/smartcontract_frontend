@@ -1,4 +1,4 @@
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -33,7 +33,7 @@ export default function App() {
   return (
     <Router>
       <div className="flex flex-col w-full relative">
-        <Header user={user} onShowHistory={() => setShowHistory(true)} />
+        <Header user={user} setUser={setUser} onShowHistory={() => setShowHistory(true)} />
 
         {showHistory && (
           <HistorySidebar

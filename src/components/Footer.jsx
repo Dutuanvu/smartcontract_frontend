@@ -1,8 +1,16 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+
 export default function Footer() {
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const navigate = useNavigate();
+
+  // Scroll all the way to the top
+  const scrollToTop = () => {
+    if (window.location.pathname !== "/") {
+      navigate("/"); // go to home first
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -21,10 +29,7 @@ export default function Footer() {
           <h3 className="font-bold mb-2">Scan</h3>
           <ul>
             <li>
-              <button
-                onClick={() => scrollToSection("upload")}
-                className="hover:underline"
-              >
+              <button onClick={scrollToTop} className="hover:underline">
                 Upload
               </button>
             </li>
@@ -46,7 +51,14 @@ export default function Footer() {
           <ul>
             <li>
               <button
-                onClick={() => scrollToSection("about")}
+                onClick={() => {
+                  const el = document.getElementById("about");
+                  const headerHeight = document.querySelector("header")?.offsetHeight || 0;
+                  if (el) {
+                    const top = el.getBoundingClientRect().top + window.scrollY - headerHeight;
+                    window.scrollTo({ top, behavior: "smooth" });
+                  }
+                }}
                 className="hover:underline"
               >
                 About Us
@@ -59,7 +71,7 @@ export default function Footer() {
         <div>
           <h3 className="font-bold mb-2">Try It Today</h3>
           <button
-            onClick={() => scrollToSection("upload")}
+            onClick={scrollToTop}
             className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300"
           >
             Scan Now

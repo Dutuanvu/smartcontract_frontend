@@ -1,17 +1,16 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login({ setUser }) {
-  const [identifier, setIdentifier] = useState(''); // username or email
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
-
     if (identifier && password) {
-      setUser(identifier); // Update global state with username/email
-      navigate('/'); // Redirect to Home/Scan page
+      setUser(identifier);
+      navigate('/');
     } else {
       alert('Please enter your username/email and password');
     }
@@ -26,27 +25,22 @@ export default function Login({ setUser }) {
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Username or Email</label>
-            <input
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:outline-none"
-              placeholder="username or email"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:outline-none"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Username or Email"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-yellow-400 focus:outline-none"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-yellow-400 focus:outline-none"
+            required
+          />
           <button
             type="submit"
             className="w-full bg-yellow-400 text-black py-2 rounded hover:bg-yellow-300 font-semibold"
@@ -55,17 +49,12 @@ export default function Login({ setUser }) {
           </button>
         </form>
 
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don’t have an account?
-            <a
-              href="/#/signup"
-              className="text-yellow-400 font-semibold ml-2 hover:underline"
-            >
-              Sign Up
-            </a>
-          </p>
-        </div>
+        <p className="text-center text-sm text-gray-600">
+          Don’t have an account?
+          <Link to="/signup" className="text-yellow-400 font-semibold ml-2 hover:underline">
+            Sign Up
+          </Link>
+        </p>
       </div>
     </div>
   );
