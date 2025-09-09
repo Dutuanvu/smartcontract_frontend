@@ -27,12 +27,12 @@ export default function AboutSection() {
             </li>
             <li className="bg-blue-50 p-4 rounded shadow">
               <p className="font-bold">Pham Dang Khoa</p>
-              <p>Machine Learning Engineer</p>
+              <p>Backend Developer</p>
               <p className="text-sm text-gray-600">Built API services and handled backend integration. </p>
             </li>
             <li className="bg-blue-50 p-4 rounded shadow">
               <p className="font-bold">Hoang Duc Phuong, Dinh Gia Bao </p>
-              <p>Backend Developer</p>
+              <p>Machine Learning Engineer</p>
               <p className="text-sm text-gray-600">Developed the AI model for vulnerability detection.</p>
             </li>
             <li className="bg-blue-50 p-4 rounded shadow">

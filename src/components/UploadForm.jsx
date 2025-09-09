@@ -38,7 +38,6 @@ const Countdown = ({ expiresAt }) => {
       const diff = Math.max(0, Math.floor(expiresAt - Date.now() / 1000));
       setTimeLeft(diff);
     }, 1000);
-
     return () => clearInterval(interval);
   }, [expiresAt]);
 
@@ -94,8 +93,12 @@ export default function UploadForm({ setHistory }) {
         setScanResult({ data, file });
 
         const { duration, expires_at } = data;
-        const issues =
-          Object.values(data).flat().filter((v) => typeof v === "string") || [];
+        // Flatten only string arrays for issues
+        let issues = [];
+        Object.keys(data).forEach((k) => {
+          if (Array.isArray(data[k])) issues.push(...data[k]);
+        });
+        issues = [...new Set(issues)]; // remove duplicates
 
         const newEntry = {
           fileName: file.name,
@@ -130,13 +133,14 @@ export default function UploadForm({ setHistory }) {
     if (!scan) return null;
 
     const { data, file } = scan;
-    const { duration, ...contracts } = data;
+    const { duration, expires_at, ...contracts } = data;
 
-    // Flatten issues from all contracts
+    // Flatten only array fields for issues
     let issues = [];
     Object.keys(contracts).forEach((k) => {
       if (Array.isArray(contracts[k])) issues.push(...contracts[k]);
     });
+    issues = [...new Set(issues)]; // remove duplicates
 
     const warning = getWarningMessage(issues);
     const fileName = file?.name || "Unknown";
@@ -148,7 +152,7 @@ export default function UploadForm({ setHistory }) {
         <p className="text-sm text-gray-600 mb-1">⏱ {duration || "Unknown"}s</p>
 
         {/* Countdown */}
-        {data.expires_at && <Countdown expiresAt={data.expires_at} />}
+        {expires_at && <Countdown expiresAt={expires_at} />}
 
         {issues.length > 0 ? (
           <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded mt-2">

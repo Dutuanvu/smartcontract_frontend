@@ -14,59 +14,19 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState([]);
 
-  // Load history once at mount
+  // Load history from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem("scanHistory");
     if (stored) setHistory(JSON.parse(stored));
   }, []);
 
-  // Re-scan handler
-  const handleRescan = async (item) => {
-    console.log("Re-scan triggered:", item);
-
-    try {
-      const response = await fetch("http://127.0.0.1:5000/rescan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename: item.fileName }),
-      });
-
-      const data = await response.json();
-      console.log("Re-scan result:", data);
-
-      if (response.ok) {
-        const updatedEntry = {
-          ...item,
-          result: data,
-          duration: data.duration || "Unknown",
-          timestamp: new Date().toISOString(),
-        };
-
-        const updatedHistory = [
-          updatedEntry,
-          ...history.filter((h) => h.fileName !== item.fileName),
-        ];
-
-        setHistory(updatedHistory);
-        localStorage.setItem("scanHistory", JSON.stringify(updatedHistory));
-      } else {
-        alert(`Re-scan failed: ${data.error || "Unknown error"}`);
-      }
-    } catch (err) {
-      console.error("Re-scan failed:", err);
-      alert("Re-scan failed. Check console for details.");
-    }
-  };
-
   // Report handler
   const handleViewReport = (item) => {
-    console.log("View Report:", item);
     alert("Report viewing not implemented yet.");
   };
 
   // Source handler
   const handleViewSource = (item) => {
-    console.log("View Source:", item);
     alert("Source viewing not implemented yet.");
   };
 
@@ -79,7 +39,6 @@ export default function App() {
           <HistorySidebar
             isOpen={showHistory}
             onClose={() => setShowHistory(false)}
-            onRescan={handleRescan}
             onViewReport={handleViewReport}
             onViewSource={handleViewSource}
             history={history}
