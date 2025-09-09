@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import RescanCompareModal from "./RescanCompareModal";
+import DownloadModal from "./DownloadModal";
 
 // Countdown component
 const Countdown = ({ expiresAt }) => {
@@ -7,13 +8,16 @@ const Countdown = ({ expiresAt }) => {
     Math.max(0, Math.floor(expiresAt - Date.now() / 1000))
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       const diff = Math.max(0, Math.floor(expiresAt - Date.now() / 1000));
       setTimeLeft(diff);
     }, 1000);
     return () => clearInterval(interval);
   }, [expiresAt]);
+
+  if (timeLeft <= 0)
+    return <p className="text-sm text-red-600">File expired</p>;
 
   const hours = Math.floor(timeLeft / 3600);
   const minutes = Math.floor((timeLeft % 3600) / 60);
@@ -26,6 +30,13 @@ const Countdown = ({ expiresAt }) => {
   );
 };
 
+// Helper: flatten string vulnerabilities from scan result
+function flattenIssues(data) {
+  if (!data) return [];
+  return Object.values(data)
+    .flat()
+    .filter((v) => typeof v === "string" && !v.endsWith(".sol"));
+}
 
 export default function HistorySidebar({
   isOpen,
@@ -37,16 +48,44 @@ export default function HistorySidebar({
   const [showRescanModal, setShowRescanModal] = useState(false);
   const [newScan, setNewScan] = useState(null);
   const [currentRescan, setCurrentRescan] = useState(null);
+  const [downloadFile, setDownloadFile] = useState(null);
 
-  // Auto-clear expired files
+  // Fetch backend files and sync with history
   useEffect(() => {
-    const now = Date.now() / 1000; // current time in seconds
-    const validHistory = history.filter((item) => !item.expires_at || item.expires_at > now);
-    if (validHistory.length !== history.length) {
-      setHistory(validHistory);
-      localStorage.setItem("scanHistory", JSON.stringify(validHistory));
-    }
-  }, [history, setHistory]);
+    const fetchBackendFiles = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/list_files");
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.files)) {
+          // Remove local history items that no longer exist on backend
+          const validHistory = history.filter((h) =>
+            data.files.includes(h.fileName)
+          );
+
+          // Add backend files not in local history
+          const missingFiles = data.files.filter(
+            (f) => !validHistory.some((h) => h.fileName === f)
+          );
+
+          const newHistoryItems = missingFiles.map((f) => ({
+            fileName: f,
+            timestamp: new Date().toISOString(),
+            duration: "Unknown",
+            issues: [],
+            expires_at: null,
+          }));
+
+          const updatedHistory = [...newHistoryItems, ...validHistory];
+          setHistory(updatedHistory);
+          localStorage.setItem("scanHistory", JSON.stringify(updatedHistory));
+        }
+      } catch (err) {
+        console.error("Failed to fetch backend files:", err);
+      }
+    };
+
+    fetchBackendFiles();
+  }, [setHistory, history]);
 
   const handleClear = () => {
     localStorage.removeItem("scanHistory");
@@ -55,20 +94,17 @@ export default function HistorySidebar({
 
   const handleRescan = async (item) => {
     setCurrentRescan(item);
-
     try {
       const response = await fetch("http://127.0.0.1:5000/rescan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename: item.fileName }),
       });
-
       const data = await response.json();
       if (response.ok) {
         setNewScan({ data, file: { name: item.fileName } });
         setShowRescanModal(true);
 
-        // Update history with new scan
         const updatedEntry = {
           ...item,
           result: data,
@@ -92,9 +128,8 @@ export default function HistorySidebar({
   return (
     <>
       <aside
-        className={`fixed top-0 right-0 w-80 h-full bg-white shadow-lg transition-transform duration-300 ease-in-out z-50 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 w-80 h-full bg-white shadow-lg z-50 transform transition-transform duration-500 ease-in-out
+          ${isOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`}
       >
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-lg font-semibold">Scan History</h2>
@@ -112,7 +147,8 @@ export default function HistorySidebar({
               >
                 <p className="font-medium truncate">{item.fileName}</p>
                 <p className="text-sm text-gray-500">
-                  Scanned: {new Date(item.timestamp).toLocaleDateString("en-GB")}
+                  Scanned:{" "}
+                  {new Date(item.timestamp).toLocaleDateString("en-GB")}
                 </p>
                 <p className="text-sm text-gray-500">
                   Duration: {item.duration ? `${item.duration}s` : "Unknown"}
@@ -129,7 +165,7 @@ export default function HistorySidebar({
                   </button>
                   <button
                     className="text-blue-600 hover:underline text-sm"
-                    onClick={() => onViewReport(item)}
+                    onClick={() => setDownloadFile(item)}
                   >
                     Download
                   </button>
@@ -155,6 +191,15 @@ export default function HistorySidebar({
           previousScan={currentRescan}
           newScan={newScan}
           onClose={() => setShowRescanModal(false)}
+        />
+      )}
+
+      {/* Download Modal */}
+      {downloadFile && (
+        <DownloadModal
+          fileName={downloadFile.fileName}
+          issues={downloadFile.issues || flattenIssues(downloadFile.result)}
+          onClose={() => setDownloadFile(null)}
         />
       )}
     </>
