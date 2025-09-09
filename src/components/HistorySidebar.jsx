@@ -1,4 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+// Countdown component (shared with UploadForm)
+const Countdown = ({ expiresAt }) => {
+  const [timeLeft, setTimeLeft] = useState(
+    Math.max(0, Math.floor(expiresAt - Date.now() / 1000))
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = Math.max(0, Math.floor(expiresAt - Date.now() / 1000));
+      setTimeLeft(diff);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  if (timeLeft <= 0) return <p className="text-sm text-red-600">File expired</p>;
+
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+  const seconds = timeLeft % 60;
+
+  return (
+    <p className="text-sm text-gray-600">
+      ⏳ Expires in {hours}h {minutes}m {seconds}s
+    </p>
+  );
+};
 
 export default function HistorySidebar({
   isOpen,
@@ -42,6 +70,9 @@ export default function HistorySidebar({
               <p className="text-sm text-gray-500">
                 Duration: {item.duration ? `${item.duration}s` : "Unknown"}
               </p>
+
+              {/* Countdown */}
+              {item.expires_at && <Countdown expiresAt={item.expires_at} />}
 
               <div className="flex justify-between mt-2">
                 <button

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Known vulnerability types
 const knownVulns = [
@@ -25,6 +25,34 @@ const getWarningMessage = (issues) => {
   }
 
   return null;
+};
+
+// Countdown component
+const Countdown = ({ expiresAt }) => {
+  const [timeLeft, setTimeLeft] = useState(
+    Math.max(0, Math.floor(expiresAt - Date.now() / 1000))
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = Math.max(0, Math.floor(expiresAt - Date.now() / 1000));
+      setTimeLeft(diff);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  if (timeLeft <= 0) return <p className="text-sm text-red-600">File expired</p>;
+
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+  const seconds = timeLeft % 60;
+
+  return (
+    <p className="text-sm text-gray-600">
+      ⏳ Expires in {hours}h {minutes}m {seconds}s
+    </p>
+  );
 };
 
 export default function UploadForm({ setHistory }) {
@@ -65,7 +93,7 @@ export default function UploadForm({ setHistory }) {
         setSelectedFiles((prev) => [...prev, file]);
         setScanResult({ data, file });
 
-        const { duration } = data;
+        const { duration, expires_at } = data;
         const issues =
           Object.values(data).flat().filter((v) => typeof v === "string") || [];
 
@@ -74,6 +102,7 @@ export default function UploadForm({ setHistory }) {
           timestamp: new Date().toISOString(),
           duration: duration || "Unknown",
           issues,
+          expires_at,
           warning: getWarningMessage(issues),
           result: data,
         };
@@ -116,10 +145,13 @@ export default function UploadForm({ setHistory }) {
       <div>
         <h3 className="text-lg font-semibold mb-2">Scan Result</h3>
         <p className="text-sm text-gray-600 mb-1">📄 {fileName}</p>
-        <p className="text-sm text-gray-600 mb-4">⏱ {duration || "Unknown"}s</p>
+        <p className="text-sm text-gray-600 mb-1">⏱ {duration || "Unknown"}s</p>
+
+        {/* Countdown */}
+        {data.expires_at && <Countdown expiresAt={data.expires_at} />}
 
         {issues.length > 0 ? (
-          <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded">
+          <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded mt-2">
             <p className="font-medium text-red-800 mb-1">Detected Issues:</p>
             <ul className="list-disc list-inside text-sm text-red-700">
               {issues.map((issue, i) => (
@@ -127,18 +159,16 @@ export default function UploadForm({ setHistory }) {
               ))}
             </ul>
 
-            {/* Tool-specific warning */}
             <p className="mt-2 text-sm text-yellow-600">
               ⚠️ This result is based on Slither. Please double-check with other tools.
             </p>
 
-            {/* Generic warning for unknown issues */}
             {warning && (
               <p className="mt-1 text-sm text-yellow-600 whitespace-pre-line">{warning}</p>
             )}
           </div>
         ) : (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded text-sm text-yellow-800">
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded text-sm text-yellow-800 mt-2">
             ⚠️ No issues detected. Please double-check with other tools.
             <br />
             ℹ️ This app only registers the following:
@@ -159,7 +189,6 @@ export default function UploadForm({ setHistory }) {
         Upload Your Smart Contracts
       </h2>
 
-      {/* Drag & Drop */}
       <div
         className="border-2 border-dashed border-gray-400 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50"
         onDragOver={(e) => e.preventDefault()}
@@ -183,7 +212,6 @@ export default function UploadForm({ setHistory }) {
         </p>
       </div>
 
-      {/* Uploading Progress */}
       {uploadingFile && (
         <div className="mt-4">
           <p className="text-sm text-gray-700 mb-1">Uploading - 1/1 file</p>
@@ -197,7 +225,6 @@ export default function UploadForm({ setHistory }) {
         </div>
       )}
 
-      {/* Scan Result */}
       {scanResult && (
         <div className="mt-6 bg-white p-4 rounded shadow">
           {renderScanResult(scanResult)}
