@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-// 🔹 Known vulnerability types
+// Known vulnerability types
 const knownVulns = [
   "Reentrancy",
   "Shadowing Local",
@@ -13,19 +13,15 @@ const knownVulns = [
   "Dangerous Usage of 'tx.origin'",
 ];
 
-// 🔹 Helper: generate warning message
+// Helper: generate warning message
 const getWarningMessage = (issues) => {
-  const vulnList =
-    "ℹ️ This application currently registers 9 vulnerability types: " +
-    knownVulns.join(", ") + ".";
-
   if (!issues || issues.length === 0) {
-    return `⚠️ No issues detected. Please double-check with other tools.\n${vulnList}`;
+    return `⚠️ No issues detected. Please double-check with other tools.`;
   }
 
   const unknownIssues = issues.filter((v) => !knownVulns.includes(v));
   if (unknownIssues.length > 0) {
-    return `⚠️ Some issues are outside the stored vulnerability set. Double-check with other tools.\n${vulnList}`;
+    return `⚠️ Some issues are outside the stored vulnerability set. Double-check with other tools.`;
   }
 
   return null;
@@ -67,15 +63,14 @@ export default function UploadForm({ setHistory }) {
 
       if (response.ok) {
         setSelectedFiles((prev) => [...prev, file]);
-        setScanResult(data);
+        setScanResult({ data, file });
 
-        // Extract main contract issues
-        const { duration, filename, ...contracts } = data;
-        let mainKey = Object.keys(contracts).find((k) => k !== "duration" && k !== "filename");
-        const issues = mainKey && Array.isArray(contracts[mainKey]) ? contracts[mainKey] : [];
+        const { duration } = data;
+        const issues =
+          Object.values(data).flat().filter((v) => typeof v === "string") || [];
 
         const newEntry = {
-          fileName: filename || file.name,
+          fileName: file.name,
           timestamp: new Date().toISOString(),
           duration: duration || "Unknown",
           issues,
@@ -85,14 +80,13 @@ export default function UploadForm({ setHistory }) {
 
         const existing = JSON.parse(localStorage.getItem("scanHistory")) || [];
         const updatedHistory = [newEntry, ...existing];
-
         localStorage.setItem("scanHistory", JSON.stringify(updatedHistory));
         setHistory(updatedHistory);
       } else {
-        setScanResult({ error: data.error || "Unknown error" });
+        setScanResult({ error: data.error || "Unknown error", file });
       }
     } catch (err) {
-      setScanResult({ error: err.message });
+      setScanResult({ error: err.message, file });
     } finally {
       setUploadingFile(null);
     }
@@ -103,21 +97,26 @@ export default function UploadForm({ setHistory }) {
     setScanResult(null);
   };
 
-  // 🔹 Render scan results without contract name
-  const renderScanResult = (result) => {
-    if (!result) return null;
+  const renderScanResult = (scan) => {
+    if (!scan) return null;
 
-    const { duration, filename, ...contracts } = result;
-    let mainKey = Object.keys(contracts).find((k) => k !== "duration" && k !== "filename");
-    const issues = mainKey && Array.isArray(contracts[mainKey]) ? contracts[mainKey] : [];
+    const { data, file } = scan;
+    const { duration, ...contracts } = data;
+
+    // Flatten issues from all contracts
+    let issues = [];
+    Object.keys(contracts).forEach((k) => {
+      if (Array.isArray(contracts[k])) issues.push(...contracts[k]);
+    });
 
     const warning = getWarningMessage(issues);
+    const fileName = file?.name || "Unknown";
 
     return (
       <div>
         <h3 className="text-lg font-semibold mb-2">Scan Result</h3>
-        <p className="text-sm text-gray-600 mb-1">📄 {filename}</p>
-        <p className="text-sm text-gray-600 mb-4">⏱ {duration}s</p>
+        <p className="text-sm text-gray-600 mb-1">📄 {fileName}</p>
+        <p className="text-sm text-gray-600 mb-4">⏱ {duration || "Unknown"}s</p>
 
         {issues.length > 0 ? (
           <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded">
@@ -127,8 +126,15 @@ export default function UploadForm({ setHistory }) {
                 <li key={i}>{issue}</li>
               ))}
             </ul>
+
+            {/* Tool-specific warning */}
+            <p className="mt-2 text-sm text-yellow-600">
+              ⚠️ This result is based on Slither. Please double-check with other tools.
+            </p>
+
+            {/* Generic warning for unknown issues */}
             {warning && (
-              <p className="mt-2 text-sm text-yellow-600 whitespace-pre-line">{warning}</p>
+              <p className="mt-1 text-sm text-yellow-600 whitespace-pre-line">{warning}</p>
             )}
           </div>
         ) : (
