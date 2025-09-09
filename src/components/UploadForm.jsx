@@ -1,27 +1,54 @@
 import { useState } from "react";
 
-export default function UploadForm() {
+// 🔹 Known vulnerability types
+const knownVulns = [
+  "Reentrancy",
+  "Shadowing Local",
+  "Unused Return",
+  "Missing Events Arithmetic",
+  "Missing Zero Address Validation",
+  "Functions That Send Ether To Arbitrary Destinations",
+  "Block Timestamp Dependency",
+  "Divide Before Multiply",
+  "Dangerous Usage of 'tx.origin'",
+];
+
+// 🔹 Helper: generate warning message
+const getWarningMessage = (issues) => {
+  const vulnList =
+    "ℹ️ This application currently registers 9 vulnerability types: " +
+    knownVulns.join(", ") + ".";
+
+  if (!issues || issues.length === 0) {
+    return `⚠️ No issues detected. Please double-check with other tools.\n${vulnList}`;
+  }
+
+  const unknownIssues = issues.filter((v) => !knownVulns.includes(v));
+  if (unknownIssues.length > 0) {
+    return `⚠️ Some issues are outside the stored vulnerability set. Double-check with other tools.\n${vulnList}`;
+  }
+
+  return null;
+};
+
+export default function UploadForm({ setHistory }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadingFile, setUploadingFile] = useState(null);
   const [scanResult, setScanResult] = useState(null);
 
   const handleDrop = (e) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter(f =>
-      f.name.endsWith('.sol')
+    const files = Array.from(e.dataTransfer.files).filter((f) =>
+      f.name.endsWith(".sol")
     );
-    if (files.length) {
-      uploadToBackend(files[0]);
-    }
+    if (files.length) uploadToBackend(files[0]);
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files).filter(f =>
-      f.name.endsWith('.sol')
+    const files = Array.from(e.target.files).filter((f) =>
+      f.name.endsWith(".sol")
     );
-    if (files.length) {
-      uploadToBackend(files[0]);
-    }
+    if (files.length) uploadToBackend(files[0]);
   };
 
   const uploadToBackend = async (file) => {
@@ -36,21 +63,31 @@ export default function UploadForm() {
         method: "POST",
         body: formData,
       });
-
       const data = await response.json();
 
       if (response.ok) {
-        setSelectedFiles(prev => [...prev, file]);
+        setSelectedFiles((prev) => [...prev, file]);
         setScanResult(data);
 
+        // Extract main contract issues
+        const { duration, filename, ...contracts } = data;
+        let mainKey = Object.keys(contracts).find((k) => k !== "duration" && k !== "filename");
+        const issues = mainKey && Array.isArray(contracts[mainKey]) ? contracts[mainKey] : [];
+
         const newEntry = {
-          fileName: file.name,
+          fileName: filename || file.name,
           timestamp: new Date().toISOString(),
+          duration: duration || "Unknown",
+          issues,
+          warning: getWarningMessage(issues),
           result: data,
-          duration: data.duration || "Unknown"
         };
+
         const existing = JSON.parse(localStorage.getItem("scanHistory")) || [];
-        localStorage.setItem("scanHistory", JSON.stringify([newEntry, ...existing]));
+        const updatedHistory = [newEntry, ...existing];
+
+        localStorage.setItem("scanHistory", JSON.stringify(updatedHistory));
+        setHistory(updatedHistory);
       } else {
         setScanResult({ error: data.error || "Unknown error" });
       }
@@ -62,15 +99,61 @@ export default function UploadForm() {
   };
 
   const handleRemove = (index) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setScanResult(null);
+  };
+
+  // 🔹 Render scan results without contract name
+  const renderScanResult = (result) => {
+    if (!result) return null;
+
+    const { duration, filename, ...contracts } = result;
+    let mainKey = Object.keys(contracts).find((k) => k !== "duration" && k !== "filename");
+    const issues = mainKey && Array.isArray(contracts[mainKey]) ? contracts[mainKey] : [];
+
+    const warning = getWarningMessage(issues);
+
+    return (
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Scan Result</h3>
+        <p className="text-sm text-gray-600 mb-1">📄 {filename}</p>
+        <p className="text-sm text-gray-600 mb-4">⏱ {duration}s</p>
+
+        {issues.length > 0 ? (
+          <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded">
+            <p className="font-medium text-red-800 mb-1">Detected Issues:</p>
+            <ul className="list-disc list-inside text-sm text-red-700">
+              {issues.map((issue, i) => (
+                <li key={i}>{issue}</li>
+              ))}
+            </ul>
+            {warning && (
+              <p className="mt-2 text-sm text-yellow-600 whitespace-pre-line">{warning}</p>
+            )}
+          </div>
+        ) : (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded text-sm text-yellow-800">
+            ⚠️ No issues detected. Please double-check with other tools.
+            <br />
+            ℹ️ This app only registers the following:
+            <ul className="list-disc list-inside ml-5 mt-1">
+              {knownVulns.map((vuln, i) => (
+                <li key={i}>{vuln}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <div className="w-full bg-blue-100 p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold text-center mb-4">Upload Your Smart Contracts</h2>
+      <h2 className="text-xl font-bold text-center mb-4">
+        Upload Your Smart Contracts
+      </h2>
 
-      {/* Drag & Drop box */}
+      {/* Drag & Drop */}
       <div
         className="border-2 border-dashed border-gray-400 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50"
         onDragOver={(e) => e.preventDefault()}
@@ -108,40 +191,10 @@ export default function UploadForm() {
         </div>
       )}
 
-      {/* Uploaded Files */}
-      {selectedFiles.length > 0 && (
-        <div className="mt-4 w-full">
-          <p className="text-sm text-gray-700 mb-1">
-            Uploaded - {selectedFiles.length} file
-            {selectedFiles.length > 1 ? "s" : ""}
-          </p>
-          <div className="space-y-2">
-            {selectedFiles.map((file, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center border border-green-400 px-2 py-1 rounded"
-              >
-                <span className="text-sm">{file.name}</span>
-                <button
-                  type="button"
-                  className="text-red-500"
-                  onClick={() => handleRemove(idx)}
-                >
-                  ❌
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Result from /upload */}
+      {/* Scan Result */}
       {scanResult && (
         <div className="mt-6 bg-white p-4 rounded shadow">
-          <h3 className="text-lg font-semibold mb-2">Scan Result (from /upload)</h3>
-          <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap break-words overflow-x-auto">
-            {JSON.stringify(scanResult, null, 2)}
-          </pre>
+          {renderScanResult(scanResult)}
         </div>
       )}
     </div>

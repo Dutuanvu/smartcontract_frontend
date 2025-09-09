@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import React from "react";
 
-export default function HistorySidebar({ isOpen, onClose }) {
-  const [history, setHistory] = useState([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("scanHistory");
-    if (stored) {
-      setHistory(JSON.parse(stored));
-    }
-  }, []);
-
+export default function HistorySidebar({
+  isOpen,
+  onClose,
+  onRescan,
+  onViewReport,
+  onViewSource,
+  history,
+  setHistory,
+}) {
   const handleClear = () => {
     localStorage.removeItem("scanHistory");
     setHistory([]);
@@ -37,20 +36,30 @@ export default function HistorySidebar({ isOpen, onClose }) {
             >
               <p className="font-medium truncate">{item.fileName}</p>
               <p className="text-sm text-gray-500">
-                Scanned: {new Date(item.timestamp).toLocaleDateString("en-GB")}
+                Scanned:{" "}
+                {new Date(item.timestamp).toLocaleDateString("en-GB")}
               </p>
               <p className="text-sm text-gray-500">
                 Duration: {item.duration ? `${item.duration}s` : "Unknown"}
               </p>
 
               <div className="flex justify-between mt-2">
-                <button className="text-blue-600 hover:underline text-sm">
+                <button
+                  className="text-blue-600 hover:underline text-sm"
+                  onClick={() => onRescan(item)}
+                >
                   Re-scan
                 </button>
-                <button className="text-blue-600 hover:underline text-sm">
+                <button
+                  className="text-blue-600 hover:underline text-sm"
+                  onClick={() => onViewReport(item)}
+                >
                   Report
                 </button>
-                <button className="text-blue-600 hover:underline text-sm">
+                <button
+                  className="text-blue-600 hover:underline text-sm"
+                  onClick={() => onViewSource(item)}
+                >
                   Source
                 </button>
               </div>
