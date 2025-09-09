@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header({ user, setUser, onShowHistory }) {
   const navigate = useNavigate();
@@ -20,14 +20,14 @@ export default function Header({ user, setUser, onShowHistory }) {
     }
   };
 
-    const handleLogoClick = () => {
-      if (window.location.pathname !== "/") {
-        navigate("/");
-        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    };
+  const handleLogoClick = () => {
+    if (window.location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const handleAboutClick = () => {
     if (window.location.pathname !== "/") {
@@ -36,6 +36,12 @@ export default function Header({ user, setUser, onShowHistory }) {
     } else {
       scrollWithOffset("about");
     }
+  };
+
+  // ✅ New helper for Login/Signup buttons to scroll top before navigating
+  const handleNavigateTop = (path) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    navigate(path);
   };
 
   return (
@@ -72,15 +78,18 @@ export default function Header({ user, setUser, onShowHistory }) {
           </div>
         ) : (
           <div className="flex items-center space-x-3">
-            <Link to="/login" className="text-yellow-400 font-semibold hover:underline">
+            <button
+              onClick={() => handleNavigateTop("/login")}
+              className="text-yellow-400 font-semibold hover:underline"
+            >
               Login
-            </Link>
-            <Link
-              to="/signup"
+            </button>
+            <button
+              onClick={() => handleNavigateTop("/signup")}
               className="bg-gradient-to-r from-green-400 to-green-500 text-white px-5 py-2 rounded-full font-semibold shadow-md hover:shadow-lg hover:from-green-500 hover:to-green-600 transform hover:-translate-y-0.5 transition-all duration-200"
             >
               Signup
-            </Link>
+            </button>
           </div>
         )}
       </div>
