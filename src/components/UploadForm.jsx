@@ -13,6 +13,19 @@ const knownVulns = [
   "Dangerous Usage of 'tx.origin'",
 ];
 
+// Reference map
+const vulnReferences = {
+  "Reentrancy": "https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities",
+  "Shadowing Local": "https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing",
+  "Unused Return": "https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return",
+  "Missing Events Arithmetic": "https://github.com/crytic/slither/wiki/Detector-Documentation#missing-events-arithmetic",
+  "Missing Zero Address Validation": "https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation",
+  "Functions That Send Ether To Arbitrary Destinations": "https://github.com/crytic/slither/wiki/Detector-Documentation#functions-that-send-ether-to-arbitrary-destinations",
+  "Block Timestamp Dependency": "https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp",
+  "Divide Before Multiply": "https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply",
+  "Dangerous Usage of 'tx.origin'": "https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-usage-of-txorigin"
+};
+
 // Helper: generate warning message
 const getWarningMessage = (issues) => {
   if (!issues || issues.length === 0) {
@@ -93,12 +106,11 @@ export default function UploadForm({ setHistory }) {
         setScanResult({ data, file });
 
         const { duration, expires_at } = data;
-        // Flatten only string arrays for issues
         let issues = [];
         Object.keys(data).forEach((k) => {
           if (Array.isArray(data[k])) issues.push(...data[k]);
         });
-        issues = [...new Set(issues)]; // remove duplicates
+        issues = [...new Set(issues)];
 
         const newEntry = {
           fileName: file.name,
@@ -135,12 +147,11 @@ export default function UploadForm({ setHistory }) {
     const { data, file } = scan;
     const { duration, expires_at, ...contracts } = data;
 
-    // Flatten only array fields for issues
     let issues = [];
     Object.keys(contracts).forEach((k) => {
       if (Array.isArray(contracts[k])) issues.push(...contracts[k]);
     });
-    issues = [...new Set(issues)]; // remove duplicates
+    issues = [...new Set(issues)];
 
     const warning = getWarningMessage(issues);
     const fileName = file?.name || "Unknown";
@@ -151,15 +162,27 @@ export default function UploadForm({ setHistory }) {
         <p className="text-sm text-gray-600 mb-1">📄 {fileName}</p>
         <p className="text-sm text-gray-600 mb-1">⏱ {duration || "Unknown"}s</p>
 
-        {/* Countdown */}
         {expires_at && <Countdown expiresAt={expires_at} />}
 
         {issues.length > 0 ? (
           <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded mt-2">
             <p className="font-medium text-red-800 mb-1">Detected Issues:</p>
-            <ul className="list-disc list-inside text-sm text-red-700">
+            <ul className="list-disc list-outside text-sm text-red-700 ml-5">
               {issues.map((issue, i) => (
-                <li key={i}>{issue}</li>
+                <li key={i}>
+                  {issue}{" "}
+                  {vulnReferences[issue] && (
+                    <a
+                      href={vulnReferences[issue]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 text-blue-500 align-super text-xs"
+                      title="View reference"
+                    >
+                      🗗
+                    </a>
+                  )}
+                </li>
               ))}
             </ul>
 
@@ -176,9 +199,22 @@ export default function UploadForm({ setHistory }) {
             ⚠️ No issues detected. Please double-check with other tools.
             <br />
             ℹ️ This app only registers the following:
-            <ul className="list-disc list-inside ml-5 mt-1">
+            <ul className="list-disc list-outside ml-5 mt-1">
               {knownVulns.map((vuln, i) => (
-                <li key={i}>{vuln}</li>
+                <li key={i}>
+                  {vuln}{" "}
+                  {vulnReferences[vuln] && (
+                    <a
+                      href={vulnReferences[vuln]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 text-blue-500 align-super text-xs"
+                      title="View reference"
+                    >
+                      🗗
+                    </a>
+                  )}
+                </li>
               ))}
             </ul>
           </div>
