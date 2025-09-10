@@ -50,7 +50,7 @@ export default function AboutSection() {
             <li><strong>Start Date:</strong> Feb 2025</li>
             <li><strong>Expected Completion:</strong> September 2025</li>
             <li>Phase 1: Dataset preparation  — ✅ Completed</li>
-            <li>Phase 2: UI development, backend integration & model training — 🔄 In progress</li>
+            <li>Phase 2: UI development, backend integration & model training — ✅ Completed</li>
           </ul>
         </div>
       </div>
