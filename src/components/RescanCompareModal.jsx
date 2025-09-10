@@ -1,12 +1,13 @@
 import React from "react";
 
 // Helper: flatten only strings that are vulnerabilities
-const flattenIssues = (data) => {
+function flattenIssues(data) {
   if (!data) return [];
-  return Object.values(data)
+  const flat = Object.values(data)
     .flat()
-    .filter((v) => typeof v === "string" && !v.endsWith(".sol")); // ignore filenames
-};
+    .filter((v) => typeof v === "string" && !v.endsWith(".sol"));
+  return Array.from(new Set(flat));
+}
 
 export default function RescanCompareModal({ previousScan, newScan, onClose }) {
   if (!previousScan || !newScan) return null;
