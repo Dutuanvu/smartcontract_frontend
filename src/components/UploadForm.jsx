@@ -15,15 +15,24 @@ const knownVulns = [
 
 // Reference map
 const vulnReferences = {
-  "Reentrancy": "https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities",
-  "Shadowing Local": "https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing",
-  "Unused Return": "https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return",
-  "Missing Events Arithmetic": "https://github.com/crytic/slither/wiki/Detector-Documentation#missing-events-arithmetic",
-  "Missing Zero Address Validation": "https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation",
-  "Functions That Send Ether To Arbitrary Destinations": "https://github.com/crytic/slither/wiki/Detector-Documentation#functions-that-send-ether-to-arbitrary-destinations",
-  "Block Timestamp Dependency": "https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp",
-  "Divide Before Multiply": "https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply",
-  "Dangerous Usage of 'tx.origin'": "https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-usage-of-txorigin"
+  Reentrancy:
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities",
+  "Shadowing Local":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing",
+  "Unused Return":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return",
+  "Missing Events Arithmetic":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#missing-events-arithmetic",
+  "Missing Zero Address Validation":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation",
+  "Functions That Send Ether To Arbitrary Destinations":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#functions-that-send-ether-to-arbitrary-destinations",
+  "Block Timestamp Dependency":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp",
+  "Divide Before Multiply":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply",
+  "Dangerous Usage of 'tx.origin'":
+    "https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-usage-of-txorigin",
 };
 
 // Helper: generate warning message
@@ -54,7 +63,8 @@ const Countdown = ({ expiresAt }) => {
     return () => clearInterval(interval);
   }, [expiresAt]);
 
-  if (timeLeft <= 0) return <p className="text-sm text-red-600">File expired</p>;
+  if (timeLeft <= 0)
+    return <p className="text-sm text-red-600">File expired</p>;
 
   const hours = Math.floor(timeLeft / 3600);
   const minutes = Math.floor((timeLeft % 3600) / 60);
@@ -144,8 +154,24 @@ export default function UploadForm({ setHistory }) {
   const renderScanResult = (scan) => {
     if (!scan) return null;
 
-    const { data, file } = scan;
-    const { duration, expires_at, ...contracts } = data;
+    const { data, file, error } = scan;
+
+    // show error when can't compile
+    if (error) {
+      return (
+        <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded mt-2">
+          <p className="font-medium text-red-800 mb-1">
+            Compilation / Scan Failed
+          </p>
+          <p className="text-sm text-red-700">{error}</p>
+          <p className="mt-2 text-sm text-gray-600">
+            ⚠️ Please check your Solidity file or try another tool.
+          </p>
+        </div>
+      );
+    }
+
+    const { duration, expires_at, ...contracts } = data || {};
 
     let issues = [];
     Object.keys(contracts).forEach((k) => {
@@ -160,7 +186,9 @@ export default function UploadForm({ setHistory }) {
       <div>
         <h3 className="text-lg font-semibold mb-2">Scan Result</h3>
         <p className="text-sm text-gray-600 mb-1">📄 {fileName}</p>
-        <p className="text-sm text-gray-600 mb-1">⏱ {duration || "Unknown"}s</p>
+        <p className="text-sm text-gray-600 mb-1">
+          ⏱ {duration || "Unknown"}s
+        </p>
 
         {expires_at && <Countdown expiresAt={expires_at} />}
 
@@ -187,11 +215,14 @@ export default function UploadForm({ setHistory }) {
             </ul>
 
             <p className="mt-2 text-sm text-yellow-600">
-              ⚠️ This result is based on Slither. Please double-check with other tools.
+              ⚠️ This result is based on Slither. Please double-check with other
+              tools.
             </p>
 
             {warning && (
-              <p className="mt-1 text-sm text-yellow-600 whitespace-pre-line">{warning}</p>
+              <p className="mt-1 text-sm text-yellow-600 whitespace-pre-line">
+                {warning}
+              </p>
             )}
           </div>
         ) : (
@@ -224,7 +255,7 @@ export default function UploadForm({ setHistory }) {
   };
 
   return (
-    <div className="w-full bg-blue-100 p-6 rounded-lg shadow-md">
+    <div className="w-full bg-blue-100 p-6 rounded-lg shadow-md relative">
       <h2 className="text-xl font-bold text-center mb-4">
         Upload Your Smart Contracts
       </h2>
